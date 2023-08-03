@@ -53,7 +53,7 @@ stages:
     displayName: Deploy to Dev
     pool:
       vmImage: $(vmImageName)
-    environment: 'Venkatasai1308dotnet.bermtec-dev'
+    environment: 'dev'
     strategy:
       runOnce:
         deploy:
