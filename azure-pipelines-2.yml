@@ -23,7 +23,6 @@ variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
-
 stages:
 - stage: Build
   displayName: Build stage
@@ -80,13 +79,13 @@ stages:
 
 - stage: DeployToStage
   displayName: Deploy to Stage stage
-  dependsOn: Build
+  dependsOn: DeployToDev
   jobs:
   - deployment: DeployToStage
     displayName: Deploy to Stage
     pool:
       vmImage: $(vmImageName)
-    environment: 'Venkatasai1308dotnet.bermtec-stage'
+    environment: 'stage'
     strategy:
       runOnce:
         deploy:
@@ -118,7 +117,7 @@ stages:
     displayName: Deploy to Production
     pool:
       vmImage: $(vmImageName)
-    environment: 'Venkatasai1308dotnet.bermtec-prod'
+    environment: 'prod'
     strategy:
       runOnce:
         deploy:
