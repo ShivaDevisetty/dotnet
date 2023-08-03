@@ -81,7 +81,7 @@ stages:
   displayName: Deploy to Production stage
   dependsOn: Build
   jobs:
-  - deployment: DeployToProd
+  - deployment: DeployToDev
     displayName: Deploy to Production
     pool:
       vmImage: $(vmImageName)
