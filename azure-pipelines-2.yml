@@ -1,3 +1,5 @@
+# azure-pipeline.yaml
+
 # Deploy to Azure Kubernetes Service
 # Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
@@ -44,16 +46,15 @@ stages:
     - upload: manifests
       artifact: manifests
 
-- stage: Deploy
-  displayName: Deploy stage
+- stage: DeployToDev
+  displayName: Deploy to Dev stage
   dependsOn: Build
-
   jobs:
-  - deployment: Deploy
-    displayName: Deploy
+  - deployment: DeployToDev
+    displayName: Deploy to Dev
     pool:
       vmImage: $(vmImageName)
-    environment: 'Venkatasai1308dotnet.bermtec'
+    environment: 'Venkatasai1308dotnet.bermtec-dev'
     strategy:
       runOnce:
         deploy:
@@ -66,7 +67,7 @@ stages:
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
 
           - task: KubernetesManifest@0
-            displayName: Deploy to Kubernetes cluster
+            displayName: Deploy to Kubernetes cluster (Dev)
             inputs:
               action: deploy
               manifests: |
@@ -76,4 +77,70 @@ stages:
                 $(imagePullSecret)
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToStage
+  displayName: Deploy to Stage stage
+  dependsOn: Build
+  jobs:
+  - deployment: DeployToStage
+    displayName: Deploy to Stage
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'Venkatasai1308dotnet.bermtec-stage'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster (Stage)
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+- stage: DeployToProd
+  displayName: Deploy to Production stage
+  dependsOn: Build
+  jobs:
+  - deployment: DeployToProd
+    displayName: Deploy to Production
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'Venkatasai1308dotnet.bermtec-prod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster (Prod)
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+
 
