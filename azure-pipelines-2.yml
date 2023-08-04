@@ -81,3 +81,36 @@ stages:
               imagePullSecrets: '$(imagePullSecret)'
               rolloutStatusTimeout: '120'
 
+- stage: DeployToProd
+  displayName: Deploy to Production stage
+  dependsOn: DeployToDev
+  jobs:
+  - deployment: DeployToDev
+    displayName: Deploy to Production
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'prod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster (Prod)
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
+
