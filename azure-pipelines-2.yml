@@ -79,7 +79,7 @@ stages:
 
 - stage: DeployToProd
   displayName: Deploy to Production stage
-  dependsOn: Build
+  dependsOn: DeployToDev
   jobs:
   - deployment: DeployToDev
     displayName: Deploy to Production
