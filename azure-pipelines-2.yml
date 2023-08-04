@@ -68,12 +68,13 @@ stages:
           - task: KubernetesManifest@0
             displayName: Deploy to Kubernetes cluster (Dev)
             inputs:
-              action: deploy
+              action: 'deploy'
+              kubernetesServiceConnection: 'mycluster-bermtec'
+              namespace: 'bermtec'
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
                 $(Pipeline.Workspace)/manifests/service.yml
-              imagePullSecrets: |
-                $(imagePullSecret)
-              containers: |
-                $(containerRegistry)/$(imageRepository):$(tag)
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+              imagePullSecrets: '$(imagePullSecret)'
+              rolloutStatusTimeout: '120'
 
